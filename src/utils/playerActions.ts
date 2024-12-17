@@ -23,7 +23,8 @@ export const movePlayer = (
   setPos2: React.Dispatch<React.SetStateAction<Position | undefined>>,
   lowestY: React.MutableRefObject<number>,
   isMapMoving: React.MutableRefObject<boolean>,
-  sections: SectionsPair
+  sections: SectionsPair,
+  mapSection: number
 ) => {
   //console.log(isMidAirRef);
   // VERTICAL
@@ -34,7 +35,8 @@ export const movePlayer = (
     player.posX += speed.x;
 
     //Una vez alcanzado CAMERA_MOV_START indicamos que se deben mover los obstáculos
-    if (player.posX >= CAMERA_MOV_START) isMapMoving.current = true;
+    if (player.posX >= CAMERA_MOV_START && mapSection === 1)
+      isMapMoving.current = true;
   }
 
   // Usuario temporal con posición actualizada

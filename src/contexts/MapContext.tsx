@@ -16,8 +16,10 @@ import {
 } from "../types";
 import {
   CAMERA_MOV_START,
+  GRAVITY,
   initialPlayer,
   initialSpeed,
+  JUMP_SPEED,
   MAP_WIDTH,
 } from "../constants/initialValues";
 import {
@@ -81,8 +83,7 @@ const MapProvider: FC<Props> = ({ children }) => {
 
   // Animación del mapa. Básicamente es correr drawCanvas() frame por frame.
   const animate = () => {
-    //console.log("Corriendo");
-
+    console.log("Corriendo");
     //Saltamos
     if (isMouseDown.current) {
       jumpPlayer();
@@ -122,7 +123,8 @@ const MapProvider: FC<Props> = ({ children }) => {
           setPos2,
           lowestY,
           isMapMoving,
-          sections.current
+          sections.current,
+          mapSection.current
         );
       }
       createPlayer(ctx, player.current); // 6. Agregar jugador
@@ -131,14 +133,15 @@ const MapProvider: FC<Props> = ({ children }) => {
 
   useEffect(() => {
     if (pos1) {
-      //console.log(`Posicion 1: ${JSON.stringify(pos1)}`);
+      /* console.log(`Posicion 1: ${JSON.stringify(pos1)}`); */
     }
   }, [pos1]);
 
   useEffect(() => {
     if (pos2) {
-      //console.log(`Posicion 2: ${JSON.stringify(pos2)}`);
-      //console.log(`Mas Alto Y: ${lowestY.current}`);
+      
+      /* console.log(`Posicion 2: ${JSON.stringify(pos2)}`);
+      console.log(`Mas Alto Y: ${lowestY.current}`); */
     }
   }, [pos2]);
 
@@ -152,7 +155,13 @@ const MapProvider: FC<Props> = ({ children }) => {
     if (distanceTracker.current > distanceLimit) {
       mapSection.current += 1; //Subimos de sección
       distanceTracker.current = 0; //Reiniciamos el contador
-      console.log(mapSection.current);
+      //console.log(mapSection.current);
+
+      if (mapSection.current == allSections.length) {
+        isMapMoving.current = false;
+
+        return;
+      }
 
       //Este if no lo pasará si es la última sección
       if (sections.current.next) {
@@ -215,7 +224,6 @@ const MapProvider: FC<Props> = ({ children }) => {
       next: allSections[1],
     };
 
-    console.log(sections.current);
     isMapMoving.current = false;
     if (gameState.current === GameState.FINALIZADO) {
       drawCanvas(); // Redibujar el mapa si se finalizó el juego

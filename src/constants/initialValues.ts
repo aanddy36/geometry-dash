@@ -30,7 +30,7 @@ export const frameY = 11;
 export const GRAVITY = 0.0028 * GRID_SIZE; //0.14
 
 // Velocidad al saltar. Es negativa para que ascienda
-export const JUMP_SPEED = -1 * Math.sqrt(4.3 * GRAVITY * GRID_SIZE); //-5.53
+export const JUMP_SPEED = -1 * Math.sqrt(4.4 * GRAVITY * GRID_SIZE); //-5.53
 
 export const initialSpeed = {
   x: Math.round(((-2.5 * GRID_SIZE * GRAVITY) / JUMP_SPEED) * 100) / 100, //3.25
