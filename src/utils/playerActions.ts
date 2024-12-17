@@ -6,8 +6,13 @@ import {
   Figures,
   Square,
   Position,
+  SectionsPair,
 } from "../types";
-import { gravity, jumpSpeed } from "../constants/initialValues";
+import {
+  CAMERA_MOV_START,
+  GRAVITY,
+  JUMP_SPEED,
+} from "../constants/initialValues";
 import { checkCollisions, isSquare } from "../utils/collisionsFunctions";
 
 export const movePlayer = (
@@ -16,21 +21,32 @@ export const movePlayer = (
   isMidAirRef: React.MutableRefObject<boolean>,
   finishGame: () => void,
   setPos2: React.Dispatch<React.SetStateAction<Position | undefined>>,
-  lowestY: React.MutableRefObject<number>
+  lowestY: React.MutableRefObject<number>,
+  isMapMoving: React.MutableRefObject<boolean>,
+  sections: SectionsPair
 ) => {
   //console.log(isMidAirRef);
   // VERTICAL
-  speed.y += gravity; //Aceleramos con la gravedad
+  speed.y += GRAVITY; //Aceleramos con la gravedad
   const futurePosY = player.posY + speed.y; // la posición en el futuro
-
   //HORIZONTAL
-  const futurePosX = player.posX + speed.x;
+  if (!isMapMoving.current) {
+    player.posX += speed.x;
+
+    //Una vez alcanzado CAMERA_MOV_START indicamos que se deben mover los obstáculos
+    if (player.posX >= CAMERA_MOV_START) isMapMoving.current = true;
+  }
 
   // Usuario temporal con posición actualizada
-  const tempUser = { ...player, posY: futurePosY, posX: futurePosX };
+  const tempUser = { ...player, posY: futurePosY };
+
+  //Sacamos los obstáculos de las secciones
+  const allObstacles = sections.next
+    ? [...sections.current.obstacles, ...sections.next.obstacles]
+    : [...sections.current.obstacles];
 
   // Obtenemos el array de obstáculos colisionados para la posición futura. Si no hay, será null.
-  const collidedObs = checkCollisions(tempUser);
+  const collidedObs = checkCollisions(tempUser, allObstacles);
   //console.log(collidedObs);
 
   //Si no hay colision
@@ -54,6 +70,8 @@ export const movePlayer = (
 
     //En ese caso se acaba el juego
     if (notAllowedCollision) {
+      player.posY = futurePosY;
+      isMapMoving.current = false;
       return finishGame();
     }
 
@@ -68,15 +86,19 @@ export const movePlayer = (
       if (floorObs) {
         speed.y = 0;
         player.posY = (floorObs.obstacle as Square).coordY - player.height; //Sabemos al 100% que es Square
+        //console.log(player.posY);
+
         if (isMidAirRef.current) {
-          setPos2({ x: player.posX + player.width, y: player.posY + player.height });
+          setPos2({
+            x: player.posX + player.width,
+            y: player.posY + player.height,
+          });
         }
         isMidAirRef.current = false;
       }
     }
   }
-
-  player.posX = futurePosX; //En todos los escenarios movemos a la derecha
+  //console.log(futurePosX - player.posX);
 };
 
 // Manejar salto del jugador
@@ -90,6 +112,6 @@ export const jump = (
   if (!isMidAirRef.current && gameState === GameState.ACTIVO) {
     isMidAirRef.current = true;
     setPos1({ x: player.posX + player.width, y: player.posY + player.height });
-    speed.y = jumpSpeed;
+    speed.y = JUMP_SPEED;
   }
 };

@@ -1,4 +1,4 @@
-import { obstacles } from "../constants/mapObjects";
+import { initialObstacles } from "../constants/mapObjects";
 import {
   Collision,
   CollisionSide,
@@ -124,7 +124,10 @@ const isObstacleThere = (
   return null;
 };
 
-export const checkCollisions = (player: Player): Collision[] | null => {
+export const checkCollisions = (
+  player: Player,
+  obstacles: Obstacle[]
+): Collision[] | null => {
   const collisions: Collision[] = [];
 
   // Iterar sobre los obstáculos y verificar colisiones

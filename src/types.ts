@@ -54,7 +54,26 @@ export enum CollisionSide {
   BOTTOM = "BOTTOM",
 }
 
+export enum Orientation {
+  TOP = "TOP",
+  LEFT = "LEFT",
+  RIGHT = "RIGHT",
+  BOTTOM = "BOTTOM",
+}
+
 export interface Collision {
   obstacleSide: CollisionSide;
   obstacle: Obstacle;
+}
+
+export interface Section {
+  id: number;
+  leftLimit: number;
+  rightLimit: number;
+  obstacles: Obstacle[];
+}
+
+export interface SectionsPair {
+  current: Section;
+  next: Section | undefined;
 }
