@@ -16,11 +16,8 @@ import {
 } from "../types";
 import {
   CAMERA_MOV_START,
-  GRAVITY,
   initialPlayer,
   initialSpeed,
-  JUMP_SPEED,
-  MAP_WIDTH,
 } from "../constants/initialValues";
 import {
   createGrid,
@@ -29,7 +26,8 @@ import {
   setBoundaries,
 } from "../utils/canvasBuild";
 import { jump, movePlayer } from "../utils/playerActions";
-import { generateInitialSections } from "../utils/obstacleConstructors";
+import { moveCamera } from "../utils/gameActions";
+import { generateInitialSections } from "../constants/initialSections";
 
 interface MapContextProps {
   dashboardRef: React.MutableRefObject<HTMLCanvasElement | null>;
@@ -69,10 +67,10 @@ const MapProvider: FC<Props> = ({ children }) => {
   const isMidAirRef = useRef(false); // Dirá si estamos en el aire o no
   const isMouseDown = useRef(false); //Dirá si se está manteniendo hundido el click para seguir los saltos
   const isMapMoving = useRef(false); //Dirá si el frame debe moverse o no
-  //const obstacles = useRef(initialObstacles); //Los obstáculos del mapa
   const sections = useRef<SectionsPair>(INITIAL_OBS); //La sección actual y la siguiente (contienen los obstaculos)
   const mapSection = useRef(1); // En qué sección vamos
   const distanceTracker = useRef(0); // Llevará el total de la distancia en X transladada
+  const justMoveCamera = useRef(false);
 
   const [pos1, setPos1] = useState<Position>();
   const [pos2, setPos2] = useState<Position>();
@@ -83,18 +81,26 @@ const MapProvider: FC<Props> = ({ children }) => {
 
   // Animación del mapa. Básicamente es correr drawCanvas() frame por frame.
   const animate = () => {
-    console.log("Corriendo");
+    //console.log("Corriendo");
     //Saltamos
     if (isMouseDown.current) {
       jumpPlayer();
     }
 
+    drawCanvas();
+
     //Llevamos el seguimiento de en qué sección vamos
     if (gameState.current === GameState.ACTIVO && isMapMoving.current) {
-      moveCamera(); //Con esto dividimos el mapa en partes, ya que no es viable renderizar todo el mapa
+      moveCamera(
+        speed.current,
+        isMapMoving,
+        distanceTracker,
+        mapSection,
+        allSections,
+        sections
+      ); //Con esto dividimos el mapa en partes, ya que no es viable renderizar todo el mapa
     }
 
-    drawCanvas();
     const id = requestAnimationFrame(animate); // Solicita el siguiente cuadro de animación
     setAnimationId(id); // Guarda el ID de la animación
   };
@@ -114,7 +120,7 @@ const MapProvider: FC<Props> = ({ children }) => {
       drawObstacles(ctx, speed.current, isMapMoving.current, sections); // 4. Diseñar obstáculos
 
       //5. Movimiento del jugador y evaluación de colisión.
-      if (gameState.current === GameState.ACTIVO) {
+      if (gameState.current === GameState.ACTIVO && !justMoveCamera.current) {
         movePlayer(
           speed.current,
           player.current,
@@ -127,7 +133,9 @@ const MapProvider: FC<Props> = ({ children }) => {
           mapSection.current
         );
       }
-      createPlayer(ctx, player.current); // 6. Agregar jugador
+      if (!justMoveCamera.current) {
+        createPlayer(ctx, player.current); // 6. Agregar jugador
+      }
     }
   };
 
@@ -139,38 +147,34 @@ const MapProvider: FC<Props> = ({ children }) => {
 
   useEffect(() => {
     if (pos2) {
-      
       /* console.log(`Posicion 2: ${JSON.stringify(pos2)}`);
       console.log(`Mas Alto Y: ${lowestY.current}`); */
     }
   }, [pos2]);
 
-  // Con esta función indicaremos en qué sección vamos y por ende qué obstáculos escoger.
-  // La idea es siempre estar analizando los obstáculos de la sección actual y de la siguiente
-  function moveCamera() {
-    const distanceLimit = MAP_WIDTH; // El límite de la sección será 20 * GRID_SIZE
-    distanceTracker.current += speed.current.x; // Cada avance lo acumulamos.
-
-    //Si superamos el límite, cambiamos de sección. Lo hará cuando la sección actual desaparezca.
-    if (distanceTracker.current > distanceLimit) {
-      mapSection.current += 1; //Subimos de sección
-      distanceTracker.current = 0; //Reiniciamos el contador
-      //console.log(mapSection.current);
-
-      if (mapSection.current == allSections.length) {
-        isMapMoving.current = false;
-
-        return;
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "ArrowRight") {
+        justMoveCamera.current = true;
       }
+    };
 
-      //Este if no lo pasará si es la última sección
-      if (sections.current.next) {
-        sections.current.current = sections.current.next; // Indicamos que ACTUALMENTE vamos en esta sección
-        sections.current.next = allSections[mapSection.current]; // Esta será la SIGUIENTE sección
+    /* const handleKeyUp = (event: KeyboardEvent) => {
+      if (event.key === "ArrowRight") {
+        // Detener el movimiento cuando se suelta la tecla
+        justMoveCamera.current = false;
       }
-      //console.log(sections.current);
-    }
-  }
+    }; */
+
+    window.addEventListener("keydown", handleKeyDown);
+    /* window.addEventListener("keyup", handleKeyUp); */
+
+    // Limpieza del evento
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      /* window.removeEventListener("keyup", handleKeyUp); */
+    };
+  }, []);
 
   const jumpPlayer = () =>
     jump(
@@ -187,6 +191,9 @@ const MapProvider: FC<Props> = ({ children }) => {
       animate();
     }
     bgColor.current = "#88e884"; // Cambiar color de fondo
+    if (gameState.current === GameState.SUSPENDIDO) {
+      isMapMoving.current = true;
+    }
     gameState.current = GameState.ACTIVO; // Cambiar el estado del juego
   };
 

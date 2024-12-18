@@ -32,7 +32,11 @@ export const movePlayer = (
   const futurePosY = player.posY + speed.y; // la posición en el futuro
   //HORIZONTAL
   if (!isMapMoving.current) {
-    player.posX += speed.x;
+
+    //SOLO movemos al jugador en caso de que esté antes de la posicion de mover cámara
+    if (player.posX < CAMERA_MOV_START) {
+      player.posX += speed.x;
+    }
 
     //Una vez alcanzado CAMERA_MOV_START indicamos que se deben mover los obstáculos
     if (player.posX >= CAMERA_MOV_START && mapSection === 1)
@@ -72,7 +76,7 @@ export const movePlayer = (
 
     //En ese caso se acaba el juego
     if (notAllowedCollision) {
-      player.posY = futurePosY;
+      //player.posY = futurePosY;
       isMapMoving.current = false;
       return finishGame();
     }

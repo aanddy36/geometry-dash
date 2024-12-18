@@ -1,10 +1,9 @@
-import { GRID_SIZE, MAP_WIDTH, N_GRID_Y } from "../constants/initialValues";
+import { GRID_SIZE } from "../constants/initialValues";
 import {
   Figures,
+  Obstacle,
   Orientation,
   Position,
-  Section,
-  SectionsPair,
   Square,
   Triangle,
 } from "../types";
@@ -92,106 +91,15 @@ export const newTriangle = (
   return triangles;
 };
 
-//Esta función toca hacerla porque antes a
-export const generateInitialSections = (): Section[] => {
+/* export const patterns = ({
+  x,
+  y,
+  pattern,
+}: {
+  x: number;
+  y: number;
+  pattern: number;
+}): Obstacle[] => {
   
-  //Las coordenadas X de los obstáculos se escriben de 20 a 40 EXCEPTO la primera sección
-  return [
-    {
-      id: 1,
-      leftLimit: 0, // Mayor o igual
-      rightLimit: 20, //Menor que
-      //coordX va de -5 a 20.
-      obstacles: [
-        {
-          coordX: -5 * GRID_SIZE,
-          coordY: 10 * GRID_SIZE,
-          width: MAP_WIDTH + MAP_WIDTH / 4,
-          height: 3 * GRID_SIZE,
-          figure: Figures.SQUARE,
-          color: "#FFF",
-        },
-      ],
-    },
-    {
-      id: 2,
-      leftLimit: 20, // Mayor o igual
-      rightLimit: 40, //Menor que
-      obstacles: [
-        {
-          coordX: 20 * GRID_SIZE,
-          coordY: 10 * GRID_SIZE,
-          width: MAP_WIDTH,
-          height: 3 * GRID_SIZE,
-          figure: Figures.SQUARE,
-          color: "#000",
-        },
 
-        /* 2 TRIANGULOS */
-        ...newTriangle(
-          25 * GRID_SIZE + GRID_SIZE / 2,
-          9 * GRID_SIZE,
-          "#a855f7",
-          1
-        ),
-
-        /* TRIANGULO ENCIMA DE CUADRADO INCOMPLETO */
-        ...newSquare(
-          30 * GRID_SIZE,
-          9 * GRID_SIZE + GRID_SIZE * 0.375,
-          "#a855f7",
-          undefined,
-          undefined,
-          0.625 * GRID_SIZE
-        ),
-        ...newTriangle(
-          30 * GRID_SIZE + GRID_SIZE / 2,
-          8 * GRID_SIZE + GRID_SIZE * 0.375,
-          "#a855f7"
-        ),
-
-        /* ÚNICO TRIÁNGULO */
-        ...newTriangle(
-          39 * GRID_SIZE + GRID_SIZE / 2,
-          9 * GRID_SIZE,
-          "#a855f7"
-        ),
-      ],
-    },
-    {
-      id: 3,
-      leftLimit: 40,
-      rightLimit: 60,
-      obstacles: [
-        {
-          coordX: 20 * GRID_SIZE,
-          coordY: 10 * GRID_SIZE,
-          width: MAP_WIDTH,
-          height: 3 * GRID_SIZE,
-          figure: Figures.SQUARE,
-          color: "#FFF",
-        },
-        /* TRIANGULO Y CUADRADO */
-        ...newTriangle(
-          20 * GRID_SIZE + GRID_SIZE / 2,
-          9 * GRID_SIZE,
-          "#a855f7"
-        ),
-        ...newSquare(21 * GRID_SIZE, 9 * GRID_SIZE, "#a855f7"),
-
-        /* 2 CUADRADOS VERTICALES */
-        ...newSquare(25 * GRID_SIZE, 8 * GRID_SIZE, "#a855f7", undefined, 1),
-
-        /* UNICO CUADRADO */
-        ...newSquare(30 * GRID_SIZE, 9 * GRID_SIZE, "#a855f7"),
-
-        /* UNICO TRIANGULO */
-        ...newTriangle(
-          37 * GRID_SIZE + GRID_SIZE / 2,
-          9 * GRID_SIZE,
-          "#a855f7"
-        ),
-      ],
-    },
-  ];
-};
+}; */

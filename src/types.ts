@@ -77,3 +77,9 @@ export interface SectionsPair {
   current: Section;
   next: Section | undefined;
 }
+
+export enum Patterns {
+  TTSS, /* 2 TRIANGULOS A LA IZQ Y 2 CUADRADOS VERTICALES */
+  TC /* TRIANGULO ENCIMA DE CUADRADO INCOMPLETO */
+
+}

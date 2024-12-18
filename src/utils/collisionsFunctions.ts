@@ -1,4 +1,3 @@
-import { initialObstacles } from "../constants/mapObjects";
 import {
   Collision,
   CollisionSide,
