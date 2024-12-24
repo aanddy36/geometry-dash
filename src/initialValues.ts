@@ -15,15 +15,15 @@ export const initialObstacles = [
   }),
   new Square({
     color: "#a855f7",
-    position: { x: 7, y: 8 },
-  }),
-  new Square({
-    color: "#000",
     position: { x: 8, y: 8 },
   }),
   new Square({
-    color: "#a855f7",
+    color: "#000",
     position: { x: 9, y: 8 },
+  }),
+  new Square({
+    color: "#a855f7",
+    position: { x: 10, y: 8 },
   }),
   new Square({
     color: "#a855f7",

@@ -1,3 +1,6 @@
+import { GameState } from "../types";
+import { Game } from "./Game";
+
 export class Map {
   dashboard: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D | null;
@@ -8,6 +11,10 @@ export class Map {
   static readonly N_CELLS_Y = 13;
   static readonly MAP_WIDTH = Map.N_CELLS_X * Map.CELL_SIZE;
   static readonly MAP_HEIGHT = Map.N_CELLS_Y * Map.CELL_SIZE;
+  static readonly CAMERA_MOV_START = Map.CELL_SIZE * 6;
+  isMapMoving = false;
+  movedDistance = 0;
+  currentSection = 0;
 
   constructor(canvas: HTMLCanvasElement) {
     this.dashboard = canvas;
@@ -49,6 +56,19 @@ export class Map {
         this.ctx.lineTo(Map.MAP_WIDTH, y);
         this.ctx.stroke();
       }
+    }
+  }
+
+  moveCamera(game: Game) {
+    //La función solo se ejecutará si (1) se está moviendo el mapa y (2) está activo el juego
+    if (!this.isMapMoving || game.gameState !== GameState.ACTIVO) return;
+
+    const sectionWidth = Map.MAP_WIDTH; // El límite de la sección será 20 * GRID_SIZE
+    this.movedDistance += game.player.speed.x; // Cada avance lo acumulamos.
+    if (this.movedDistance > sectionWidth) {
+      this.currentSection += 1; //Subimos de sección
+      this.movedDistance = 0; //Reiniciamos el contador
+      console.log(this.currentSection);
     }
   }
 }

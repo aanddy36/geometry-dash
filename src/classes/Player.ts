@@ -31,7 +31,7 @@ export class Player {
     width = Map.CELL_SIZE,
     height = Map.CELL_SIZE,
   }: Props) {
-    this.position = { x: coordX, y: coordY };
+    this.position = { x: coordX * Map.CELL_SIZE, y: coordY * Map.CELL_SIZE };
     this.speed = { x: speedX, y: 0 };
     this.color = color;
     this.width = width;
@@ -58,6 +58,7 @@ export class Player {
   }
 
   move(game: Game) {
+    if (game.gameState !== GameState.ACTIVO) return; //Solo movemos cuando está activo
     //Agrega el salto. Siempre que esté presionado el click, saltaremos. Si estamos en mitad del aire se ignora.
     if (this.isMousePressed) this.jump(game);
 
@@ -68,8 +69,13 @@ export class Player {
       this.angle = (this.angle + game.ROTATION_RATE) % 90; //Nos aseguramos que rote máximo a 90°
     }
 
-    //HORIZONTAL
-    this.position.x += this.speed.x;
+    //HORIZONTAL. SOLO movemos al jugador en caso de que esté antes de la posicion de mover cámara
+    if (this.position.x < Map.CAMERA_MOV_START) this.position.x += this.speed.x;
+
+    //Una vez alcanzado CAMERA_MOV_START indicamos que se deben mover los obstáculos
+    if (this.position.x >= Map.CAMERA_MOV_START && !game.map.isMapMoving) {
+      game.map.isMapMoving = true;
+    }
   }
 
   jump(game: Game) {

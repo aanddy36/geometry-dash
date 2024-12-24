@@ -1,4 +1,5 @@
-import { Coord, Figures } from "../types";
+import { Coord, Figures, GameState } from "../types";
+import { Game } from "./Game";
 import { Map } from "./Map";
 import { Square } from "./Square";
 import { Triangle } from "./Triangle";
@@ -39,8 +40,11 @@ export abstract class Obstacle {
     this.currentPosition = this.originalPosition;
   }
 
-  move(speedX: number) {
-    this.currentPosition.x -= speedX;
+  move(game: Game) {
+    //Solo movemos el obstáculo si (1) se está moviendo el mapa y (2) está activo el juego
+    if (game.map.isMapMoving && game.gameState === GameState.ACTIVO) {
+      this.currentPosition.x -= game.player.speed.x;
+    }
   }
 
   static isSquare(obstacle: Obstacle): obstacle is Square {

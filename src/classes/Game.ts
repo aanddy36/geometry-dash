@@ -34,8 +34,8 @@ export class Game {
     this.map = new Map(canvas);
     this.updatePlayerStats = updatePlayerStats;
     this.player = new Player({
-      coordX: 1 * Map.CELL_SIZE,
-      coordY: 9 * Map.CELL_SIZE,
+      coordX: -5,
+      coordY: 9,
       speedX: this.SPEED_X,
       color: "#ef4444",
     });
@@ -44,7 +44,7 @@ export class Game {
   }
 
   animate() {
-    console.log("Corriendo");
+    //console.log("Corriendo");
 
     this.update();
     this._animationId = requestAnimationFrame(this.animate);
@@ -53,22 +53,32 @@ export class Game {
   // Dibujar el canvas
   update() {
     this.map.setBackground(); // 1. Dibujamos el bg del mapa
-
-    if (this.gameState === GameState.ACTIVO) {
-      this.player.move(this); // 2. Movemos al jugador
-    }
+    this.player.move(this); // 2. Movemos al jugador
+    this.map.moveCamera(this); // 3. Movemos la cámara y cambiamos de sección de ser necesario
 
     //Este estado lo creamos para verificar si algun obstáculo chocó o no.
     const someoneCollided: boolean[] = this.obstacles.map((obs) => {
-      obs.draw(this.map.ctx); // 3. Dibujamos cada obstáculo
-      return obs.checkCollision(this); //4. Evaluamos si ese obstáculo chocó
+      obs.move(this);
+      obs.draw(this.map.ctx); // 4. Dibujamos cada obstáculo
+      return obs.checkCollision(this); //5. Evaluamos si ese obstáculo chocó
+
+      /* -------------------------------------
+      OJO
+      --------------------------------------
+      
+      1. TENGO QUE HACER QUE AL CHOCARSE Y PERDER, PRIMERO SE REDIBUJEN TODOS LOS OBSTACULOS ANTES DE ACABAR LA PARTIDA.
+      SINO SOLO SE MOVERA UN OBSTACULO Y EL RESTO NO.
+      
+      2. AGREGAR QUE AL RESETEAR EL JUGADOR EMPIECE EN LA POSICION ADELTANDADA
+      
+      3. AGREGAR RESET FUNCTION EN EL MAP PARA RESTAURAR LA SECCION, DISTANCETRACKE AL HACER RESETGAME*/
     });
 
     this.player.isMidAir = !someoneCollided.includes(true); // En caso de que ningún obstáculo haya colisionado
 
-    this.player.draw(this); //5. Dibujar al personaje
+    this.player.draw(this); //6. Dibujar al personaje
 
-    this.updateReactUI(); //6. Actualizamos el UI para el seguimiento
+    this.updateReactUI(); //7. Actualizamos el UI para el seguimiento
   }
 
   startGame() {
@@ -92,6 +102,7 @@ export class Game {
   resetGame() {
     this.map.bgColor = "#c6c6c6";
     this.player.resetPosition = Map.CELL_SIZE;
+    this.obstacles.forEach((obs) => obs.resetPosition());
     if (this.gameState === GameState.FINALIZADO) {
       this.update(); // Redibujar el mapa si se finalizó el juego
     }
