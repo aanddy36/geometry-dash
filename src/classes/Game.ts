@@ -1,4 +1,4 @@
-import { initialObstacles } from "../initialValues";
+import { initialObstacles, initialSections } from "../initialValues";
 import { GameMode, GameState, PlayerStats } from "../types";
 import { Map } from "./Map";
 import { Player } from "./Player";
@@ -31,7 +31,7 @@ export class Game {
       ) / 100;
     this.ROTATION_RATE = (90 * this.GRAVITY) / -this.JUMP_SPEED;
 
-    this.map = new Map(canvas);
+    this.map = new Map(canvas, initialSections);
     this.updatePlayerStats = updatePlayerStats;
     this.player = new Player({
       coordX: -5,
@@ -57,28 +57,43 @@ export class Game {
     this.map.moveCamera(this); // 3. Movemos la cámara y cambiamos de sección de ser necesario
 
     //Este estado lo creamos para verificar si algun obstáculo chocó o no.
-    const someoneCollided: boolean[] = this.obstacles.map((obs) => {
-      obs.move(this);
-      obs.draw(this.map.ctx); // 4. Dibujamos cada obstáculo
-      return obs.checkCollision(this); //5. Evaluamos si ese obstáculo chocó
+    const collisionState = { illegalCollision: false }; // Será true si hay un choque que acabe el juego
+    this.handleObstacles(collisionState); // Movemos, dibujamos y chequeamos si el obstáculo chocó
+
+    this.player.draw(this); //6. Dibujar al personaje
+
+    this.updateReactUI(); //7. Actualizamos el UI para el seguimiento
+
+    // Acabamos el juego si hubo un choque ilegal
+    if (collisionState.illegalCollision) return this.finishGame();
+  }
+
+  handleObstacles(collisionState: { illegalCollision: boolean }) {
+    const { currentSection, nextSection } = this.map;
+    const allObstacles = [
+      ...currentSection.obstacles,
+      ...(nextSection ? nextSection.obstacles : []),
+    ];
+    //console.log(allObstacles);
+    const someoneCollided: boolean[] = allObstacles.map((obs) => {
+      obs.move(this); // 4. Movemos los obstáculos
+      obs.draw(this.map.ctx); // 5. Dibujamos cada obstáculo
+
+      //Solo evaluamos si no ha habido un choque ilegal
+      if (!collisionState.illegalCollision) {
+        return obs.checkCollision(this, collisionState); //5.5. Evaluamos si ese obstáculo chocó
+      }
+      return false;
 
       /* -------------------------------------
       OJO
       --------------------------------------
       
-      1. TENGO QUE HACER QUE AL CHOCARSE Y PERDER, PRIMERO SE REDIBUJEN TODOS LOS OBSTACULOS ANTES DE ACABAR LA PARTIDA.
-      SINO SOLO SE MOVERA UN OBSTACULO Y EL RESTO NO.
-      
-      2. AGREGAR QUE AL RESETEAR EL JUGADOR EMPIECE EN LA POSICION ADELTANDADA
-      
-      3. AGREGAR RESET FUNCTION EN EL MAP PARA RESTAURAR LA SECCION, DISTANCETRACKE AL HACER RESETGAME*/
+      1. AGREGAR RESET FUNCTION EN EL MAP PARA RESTAURAR LA SECCION, DISTANCETRACKE AL HACER RESETGAME*/
     });
+    //console.log(someoneCollided.length);
 
     this.player.isMidAir = !someoneCollided.includes(true); // En caso de que ningún obstáculo haya colisionado
-
-    this.player.draw(this); //6. Dibujar al personaje
-
-    this.updateReactUI(); //7. Actualizamos el UI para el seguimiento
   }
 
   startGame() {
@@ -102,7 +117,7 @@ export class Game {
   resetGame() {
     this.map.bgColor = "#c6c6c6";
     this.player.resetPosition = Map.CELL_SIZE;
-    this.obstacles.forEach((obs) => obs.resetPosition());
+    this.map.resetMap();
     if (this.gameState === GameState.FINALIZADO) {
       this.update(); // Redibujar el mapa si se finalizó el juego
     }

@@ -1,10 +1,14 @@
 import { GameState } from "../types";
 import { Game } from "./Game";
+import { Section } from "./Section";
 
 export class Map {
   dashboard: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D | null;
   bgColor: string;
+  sections: Section[];
+  currentSection: Section;
+  nextSection: Section | null;
 
   static readonly CELL_SIZE = 50;
   static readonly N_CELLS_X = 20;
@@ -12,14 +16,18 @@ export class Map {
   static readonly MAP_WIDTH = Map.N_CELLS_X * Map.CELL_SIZE;
   static readonly MAP_HEIGHT = Map.N_CELLS_Y * Map.CELL_SIZE;
   static readonly CAMERA_MOV_START = Map.CELL_SIZE * 6;
+
   isMapMoving = false;
   movedDistance = 0;
-  currentSection = 0;
+  currentIndex = 0;
 
-  constructor(canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement, sections: Section[]) {
     this.dashboard = canvas;
     this.ctx = this.dashboard.getContext("2d");
     this.bgColor = "#c6c6c6";
+    this.sections = sections;
+    this.currentSection = this.sections[this.currentIndex];
+    this.nextSection = this.sections[this.currentIndex + 1];
   }
 
   setBackground() {
@@ -66,9 +74,21 @@ export class Map {
     const sectionWidth = Map.MAP_WIDTH; // El límite de la sección será 20 * GRID_SIZE
     this.movedDistance += game.player.speed.x; // Cada avance lo acumulamos.
     if (this.movedDistance > sectionWidth) {
-      this.currentSection += 1; //Subimos de sección
+      this.currentIndex += 1; //Subimos de sección
       this.movedDistance = 0; //Reiniciamos el contador
-      console.log(this.currentSection);
+      this.currentSection = this.sections[this.currentIndex];
+      this.nextSection = this.sections[this.currentIndex + 1];
+      //console.log(this.currentIndex);
     }
+  }
+
+  resetMap() {
+    this.movedDistance = 0;
+    this.currentIndex = 0;
+    this.sections.forEach((sec) => {
+      sec.obstacles.forEach((obs) => obs.resetPosition());
+    });
+    this.currentSection = this.sections[0];
+    this.nextSection = this.sections[1];
   }
 }

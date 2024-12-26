@@ -9,7 +9,8 @@ export abstract class Obstacle {
   color: string;
   abstract figure: Figures; // Propiedad discriminante que deben tener las clases hijas
   currentPosition: Coord;
-  readonly originalPosition: Coord;
+  readonly originalPositionX: number;
+  readonly originalPositionY: number;
   width: number;
   height: number;
   canCollision?: boolean;
@@ -26,10 +27,9 @@ export abstract class Obstacle {
       x: position.x * Map.CELL_SIZE,
       y: position.y * Map.CELL_SIZE,
     };
-    this.originalPosition = {
-      x: position.x * Map.CELL_SIZE,
-      y: position.y * Map.CELL_SIZE,
-    };
+    this.originalPositionX = position.x * Map.CELL_SIZE;
+    this.originalPositionY = position.y * Map.CELL_SIZE;
+
     this.width = width * Map.CELL_SIZE;
     this.height = height * Map.CELL_SIZE;
 
@@ -37,7 +37,8 @@ export abstract class Obstacle {
   }
 
   resetPosition() {
-    this.currentPosition = this.originalPosition;
+    this.currentPosition.x = this.originalPositionX;
+    this.currentPosition.y = this.originalPositionY;
   }
 
   move(game: Game) {

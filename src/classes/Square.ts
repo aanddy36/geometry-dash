@@ -15,7 +15,7 @@ import { Obstacle } from "./Obstacle";
 import { Player } from "./Player";
 
 interface SquareProps {
-  color: string;
+  color?: string;
   position: Coord;
   allowedCollisionSides?: CollisionSide[]; // Desde qué lado se admiten colisiones sin perder
   allowedCollisionVertexs?: SquareBorders[];
@@ -31,7 +31,7 @@ export class Square extends Obstacle {
   readonly figure = Figures.SQUARE; // Propiedad discriminante
 
   constructor({
-    color,
+    color = "#a855f7",
     position,
     allowedCollisionSides = [CollisionSide.TOP, CollisionSide.RIGHT],
     allowedCollisionVertexs = [SquareBorders.TOP_RIGHT],
@@ -119,7 +119,6 @@ export class Square extends Obstacle {
         isPointInRotatedPlayer(vertex.position, player) &&
         !this.allowedCollisionVertexs.includes(vertex.border)
       ) {
-        //console.log(vertex.border);
         return CollisionSide.LEFT; // Siempre devolver LEFT si es el obstáculo el que está dentro del jugador
       }
     }
@@ -127,7 +126,12 @@ export class Square extends Obstacle {
     return null; // No hay colisión
   }
 
-  checkCollision(game: Game): boolean {
+  checkCollision(
+    game: Game,
+    collisionState: {
+      illegalCollision: boolean;
+    }
+  ): boolean {
     const { player } = game;
     const collidedSide = this.whichSide(player); // Determinamos por qué lado se colisionó
     //console.log(collidedSide);
@@ -142,7 +146,13 @@ export class Square extends Obstacle {
 
     // (2) Si el lado chocado NO está entre los permitidos por este cubo
     if (!this.allowedCollisionSides.includes(collidedSide)) {
-      game.finishGame();
+      //game.finishGame();
+      //console.log("Aqui");
+
+      collisionState.illegalCollision = true;
+      //console.log(this.currentPosition);
+      //console.log(player.position);
+
       return true;
     }
 

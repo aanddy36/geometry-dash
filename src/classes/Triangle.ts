@@ -4,7 +4,7 @@ import { Game } from "./Game";
 import { Obstacle } from "./Obstacle";
 
 interface TriangleProps {
-  color: string;
+  color?: string;
   position: Coord; // Posición del primer vértice
   orientation?: Orientation; // Indica hacia donde apunta el triángulo
   width?: number;
@@ -18,7 +18,7 @@ export class Triangle extends Obstacle {
   readonly figure = Figures.TRIANGLE; // Propiedad discriminante
 
   constructor({
-    color,
+    color = "#a855f7",
     position,
     width = 1,
     height = 1,
@@ -76,7 +76,12 @@ export class Triangle extends Obstacle {
     }
   }
 
-  checkCollision(game: Game): boolean {
+  checkCollision(
+    game: Game,
+    collisionState: {
+      illegalCollision: boolean;
+    }
+  ): boolean {
     const { player } = game;
 
     // Vértices del triángulo
@@ -90,7 +95,8 @@ export class Triangle extends Obstacle {
     for (const vertex of triangleVertexs) {
       // El vértice entra en el jugador
       if (isPointInRotatedPlayer(vertex, player)) {
-        game.finishGame();
+        //game.finishGame();
+        collisionState.illegalCollision = true;
         return true;
       }
     }
@@ -99,7 +105,8 @@ export class Triangle extends Obstacle {
     for (const vertex of player.vertexs) {
       // El vértice entra en el jugador
       if (this.isPointInTriangle(vertex)) {
-        game.finishGame();
+        //game.finishGame();
+        collisionState.illegalCollision = true;
         return true;
       }
     }

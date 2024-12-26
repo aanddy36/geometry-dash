@@ -34,6 +34,12 @@ export function detectCollisionSide(vertex: Coord, obs: Square): CollisionSide {
   const distToBottom = Math.abs(vertex.y - bottom);
 
   const minDist = Math.min(distToLeft, distToRight, distToTop, distToBottom);
+  /* if (minDist === distToTop) {
+    console.log(minDist);
+  } */
+  if (minDist === distToLeft) {
+    console.log(distToLeft);
+  }
 
   if (minDist === distToLeft) return CollisionSide.LEFT;
   if (minDist === distToRight) return CollisionSide.RIGHT;

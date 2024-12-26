@@ -47,7 +47,7 @@ export class Player {
 
     // SEGUNDO GIRO: Girar en torno al vértice en contacto cuando caemos rotados en un obstáculo
     if (!this.isMidAir && this.remainingAngle !== 0) {
-      this.drawWithPivot(ctx, game.ROTATION_RATE);
+      this.drawWithPivot(game);
     } else {
       // --- Primer giro: Rotación alrededor del centro si estamos en el aire ---
       this.drawDefault(ctx);
@@ -70,7 +70,11 @@ export class Player {
     }
 
     //HORIZONTAL. SOLO movemos al jugador en caso de que esté antes de la posicion de mover cámara
-    if (this.position.x < Map.CAMERA_MOV_START) this.position.x += this.speed.x;
+    if (!game.map.isMapMoving) {
+      //console.log("Hola");
+
+      this.position.x += this.speed.x;
+    }
 
     //Una vez alcanzado CAMERA_MOV_START indicamos que se deben mover los obstáculos
     if (this.position.x >= Map.CAMERA_MOV_START && !game.map.isMapMoving) {
@@ -116,7 +120,7 @@ export class Player {
   }
 
   set resetPosition(CELL_SIZE: number) {
-    this.position = { x: 1 * CELL_SIZE, y: 9 * CELL_SIZE };
+    this.position = { x: Map.CAMERA_MOV_START, y: 9 * CELL_SIZE };
     this.speed.y = 0;
     this.isMidAir = false;
     this.angle = 0;
@@ -146,7 +150,12 @@ export class Player {
     ctx.strokeRect(-this.width / 2, -this.height / 2, this.width, this.height);
   }
 
-  drawWithPivot(ctx: CanvasRenderingContext2D, rotRate: number) {
+  drawWithPivot(game: Game) {
+    const { ctx } = game.map;
+    const { ROTATION_RATE } = game;
+
+    if (!ctx) return;
+
     const lowestVertex = this.getLowestVertex(); //Encontramos el vértice más bajo sobre el que pivoteamos
     //console.log("Remaining: " + this.remainingAngle);
     ctx.translate(lowestVertex.x, lowestVertex.y); // Ajustamos el origen al vértice en contacto
@@ -155,9 +164,10 @@ export class Player {
     const angleSign = Math.sign(this.remainingAngle); //Si el ángulo es positivo o negativo
 
     //Cuadramos de cuánto será el cambio de ángulo. Siempre será 2, a menos que lo que falte sea menos que 2
-    const angleStep = oldAngle > rotRate ? rotRate : oldAngle;
+    const angleStep = oldAngle > ROTATION_RATE ? ROTATION_RATE : oldAngle;
 
     const newAngle = (oldAngle - angleStep) * angleSign; //El ángulo nuevo
+
     ctx.rotate((newAngle * Math.PI) / 180); // Giramos alrededor del vértice en contacto
 
     // Dibujo del cubo después del giro
@@ -177,10 +187,16 @@ export class Player {
     }
     this.remainingAngle = newAngle; // Le restamos al remainingAngle lo que cambiamos
     //game.stopGame();
+    //console.log(this.position.x);
     if (this.remainingAngle === 0) {
       this.angle = 0; //Hacemos 0 el ángulo en caso de que ya hayamos reestablecido todo
       this.position.y = lowestVertex.y - this.height;
-      if (angleSign < 0) this.position.x = lowestVertex.x;
+
+      if (angleSign < 0) {
+        this.position.x = lowestVertex.x;
+      } else {
+        this.position.x = lowestVertex.x - this.width;
+      }
       //console.log(this.getLowestVertex());
     }
   }
